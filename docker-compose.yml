@@ -1,0 +1,68 @@
+version: '3.8'
+services:
+  jobmanager:
+    build: ./pyflink
+    volumes:
+      - ./pyflink/data:/opt/pyflink/data
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka
+    command: jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+      DATA_PATH: "/opt/pyflink/data"
+  taskmanager:
+    build: ./pyflink
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:2.13-2.8.1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "tripdata:1:1"
+  generator:
+    build: ./generator
+    depends_on:
+      - kafka
+    volumes:
+      - ./generator/data:/opt/generator/data
+    environment:
+      SIMULATION_SPEED_FACTOR: 100000
+      DATA_PATH: "/opt/generator/data"
+  elasticsearch:
+    image: elasticsearch:7.17.13
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9201:9200"
+  kibana:
+    image: kibana:7.17.3
+    ports:
+      - "5602:5601"
+    depends_on:
+      - elasticsearch
+  load-kibana-dashboard:
+    build: ./kibana
+    command: ['/bin/bash', '-c', 'cat /tmp/load/load_ndjson.sh | tr -d "\r" | bash']
+    depends_on:
+      - kibana

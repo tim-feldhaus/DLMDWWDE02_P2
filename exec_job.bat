@@ -1,0 +1,1 @@
+docker-compose exec jobmanager ./bin/flink run -py /process_tripdata.py -d
