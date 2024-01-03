@@ -33,6 +33,6 @@ Es wird ein Docker Container mit Elasticsearch (elasticsearch:7.17.13) verwendet
 ### Data Visualization: 
 Es wird ein Docker Container mit Kibana (kibana:7.17.3) verwendet. Um Kibana zu konfigurieren, wird ein weiter Docker Container (alpine:3.18) verwendet, der durch ein Bash-Skript eine Konfigurationsdatei (./kibana/export.ndjson) nach Kibana lädt. Dort enthalten ist ein Dashboard einer Map, der benötigte Index-Pattern und die Aggregationslayer auf der Map, welche die Anzahl der ausgestiegenen Passagiere pro Stadtbezirk aggregiert und visualisiert.
 \
-\
+
 
 Im Anschluss wird ein docker-compose.yml erstellt, welches die vorher genannten Docker Container erstellt bzw. konfiguriert. Die gesamte Umgebung kann per "docker-compose up" hochgefahren werden. Damit Apache Flink den Daten verarbeitet, muss das Skript "exec_job.bat" ausgeführt werden, wodurch ein Apache Flink-Job mit dem Python-Skript erstellt wird.
